@@ -1,0 +1,4 @@
+sku,drug_name,indication,age_min,contra_allergy_keywords,dose,freq
+OTC001,Paracetamol,pneumonia,12,acetaminophen,500 mg,q8h
+OTC002,Ibuprofen,covid_suspect,18,ibuprofen,400 mg,q8h
+OTC003,Cetirizine,pneumonia,5,,10 mg,q24h

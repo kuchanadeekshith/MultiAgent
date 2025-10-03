@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Multi-Agent Healthcare Assistant</title>
+    <link rel="stylesheet" href="/static/styles.css">
+
+</head>
+<body>
+    <h1>Upload Chest X-ray and Optional PDF</h1>
+    <form action="/upload" method="post" enctype="multipart/form-data">
+        <label for="xray_file">Chest X-ray (PNG/JPG):</label>
+        <input type="file" id="xray_file" name="xray_file" accept=".png,.jpg,.jpeg" required><br><br>
+
+        <label for="pdf_file">Optional PDF Report/ID:</label>
+        <input type="file" id="pdf_file" name="pdf_file" accept=".pdf"><br><br>
+
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>

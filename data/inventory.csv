@@ -1,0 +1,5 @@
+pharmacy_id,sku,drug_name,form,strength,price,qty
+ph001,OTC001,Paracetamol,Tablet,500 mg,30,50
+ph001,OTC002,Ibuprofen,Tablet,400 mg,45,20
+ph002,OTC001,Paracetamol,Tablet,500 mg,32,30
+ph002,OTC003,Cetirizine,Tablet,10 mg,25,40

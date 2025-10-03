@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Healthcare Assistant - Result</title>
+    <link rel="stylesheet" href="/static/styles.css">
+
+</head>
+<body>
+    <h1>Patient Assessment Result</h1>
+
+    <h2>Uploaded Files</h2>
+    <p><strong>X-ray:</strong> {{ ingestion.xray_path }}</p>
+    <p><strong>Notes:</strong> {{ ingestion.notes }}</p>
+
+    <h2>Imaging Analysis</h2>
+    <p><strong>Condition Probabilities:</strong> {{ imaging.condition_probs }}</p>
+    <p><strong>Severity Hint:</strong> {{ imaging.severity_hint }}</p>
+
+    <h2>Therapy Recommendation</h2>
+    <p><strong>OTC Options:</strong></p>
+    <ul>
+        {% for med in therapy.otc_options %}
+        <li>{{ med.sku }} - {{ med.dose }} - {{ med.freq }} - Warnings: {{ med.warnings }}</li>
+        {% endfor %}
+    </ul>
+    <p><strong>Red Flags:</strong> {{ therapy.red_flags }}</p>
+
+    <h2>Pharmacy Match</h2>
+    {% if pharmacy %}
+        <p><strong>Pharmacy Name:</strong> {{ pharmacy.pharmacy_name }}</p>
+        <p><strong>Items Reserved:</strong></p>
+        <ul>
+            {% for item in pharmacy.items %}
+            <li>{{ item.sku }} - Quantity: {{ item.qty }}</li>
+            {% endfor %}
+        </ul>
+        <p><strong>ETA:</strong> {{ pharmacy.eta_min }} minutes</p>
+        <p><strong>Delivery Fee:</strong> ₹{{ pharmacy.delivery_fee }}</p>
+    {% else %}
+        <p>No pharmacy has the selected item in stock.</p>
+    {% endif %}
+
+    <h2>Final Plan & Advice</h2>
+    <p>{{ final.advice }}</p>
+    {% if final.immediate_care_advice %}
+        <p><strong>{{ final.immediate_care_advice }}</strong></p>
+    {% endif %}
+
+    <form action="/checkout" method="post">
+        <button type="submit">Place Mock Order</button>
+    </form>
+</body>
+</html>
