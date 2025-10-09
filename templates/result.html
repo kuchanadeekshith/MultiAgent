@@ -1,53 +1,78 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Healthcare Assistant - Result</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Result - Healthcare Assistant</title>
     <link rel="stylesheet" href="/static/styles.css">
-
 </head>
 <body>
-    <h1>Patient Assessment Result</h1>
+    <header>
+        <h1>Multi-Agent Healthcare Assistant - Results</h1>
+    </header>
 
-    <h2>Uploaded Files</h2>
-    <p><strong>X-ray:</strong> {{ ingestion.xray_path }}</p>
-    <p><strong>Notes:</strong> {{ ingestion.notes }}</p>
+    <section>
+        <h2>Step 2: System Triages Likely Condition(s) & Severity</h2>
+        <p><strong>Condition Probabilities:</strong> {{ ingestion.condition_probs }}</p>
+        <p><strong>Severity Hint:</strong> {{ ingestion.severity_hint }}</p>
+    </section>
 
-    <h2>Imaging Analysis</h2>
-    <p><strong>Condition Probabilities:</strong> {{ imaging.condition_probs }}</p>
-    <p><strong>Severity Hint:</strong> {{ imaging.severity_hint }}</p>
-
-    <h2>Therapy Recommendation</h2>
-    <p><strong>OTC Options:</strong></p>
-    <ul>
-        {% for med in therapy.otc_options %}
-        <li>{{ med.sku }} - {{ med.dose }} - {{ med.freq }} - Warnings: {{ med.warnings }}</li>
-        {% endfor %}
-    </ul>
-    <p><strong>Red Flags:</strong> {{ therapy.red_flags }}</p>
-
-    <h2>Pharmacy Match</h2>
-    {% if pharmacy %}
-        <p><strong>Pharmacy Name:</strong> {{ pharmacy.pharmacy_name }}</p>
-        <p><strong>Items Reserved:</strong></p>
+    <section>
+        <h2>Step 3: Suggested Non-Prescriptive Medicine (OTC)</h2>
         <ul>
-            {% for item in pharmacy.items %}
-            <li>{{ item.sku }} - Quantity: {{ item.qty }}</li>
+            {% for option in therapy.otc_options %}
+                <li>
+                    <strong>{{ option.name }} ({{ option.sku }})</strong><br>
+                    Dosage: {{ option.dosage }}<br>
+                    Interactions: {{ option.interactions }}<br>
+                    Contraindications: {{ option.contraindications }}
+                </li>
             {% endfor %}
         </ul>
-        <p><strong>ETA:</strong> {{ pharmacy.eta_min }} minutes</p>
-        <p><strong>Delivery Fee:</strong> ₹{{ pharmacy.delivery_fee }}</p>
-    {% else %}
-        <p>No pharmacy has the selected item in stock.</p>
-    {% endif %}
+        {% if not therapy.otc_options %}
+            <p>No OTC medicines recommended.</p>
+        {% endif %}
+    </section>
 
-    <h2>Final Plan & Advice</h2>
-    <p>{{ final.advice }}</p>
-    {% if final.immediate_care_advice %}
-        <p><strong>{{ final.immediate_care_advice }}</strong></p>
-    {% endif %}
+    <section>
+        <h2>Step 4: Match to Nearest Pharmacy with Stock</h2>
+        {% if pharmacy %}
+            <p><strong>Pharmacy Name:</strong> {{ pharmacy.pharmacy_name }}</p>
+            <p><strong>Items Reserved:</strong> {{ pharmacy.items }}</p>
+            <p><strong>ETA:</strong> {{ pharmacy.eta_min }} minutes</p>
+            <p><strong>Delivery Fee:</strong> ₹{{ pharmacy.delivery_fee }}</p>
+        {% else %}
+            <p>No pharmacy has the selected item in stock.</p>
+        {% endif %}
+    </section>
 
-    <form action="/checkout" method="post">
-        <button type="submit">Place Mock Order</button>
-    </form>
+    <section>
+        <h2>Step 5: Optional Tele-consult Escalation</h2>
+        {% if doctors %}
+            <ul>
+                {% for doctor in doctors %}
+                    {% if doctor.available %}
+                        <li>
+                            <strong>{{ doctor.name }}</strong> - {{ doctor.specialty }}
+                            <form method="post" action="/consult">
+                                <button type="submit" name="doctor_name" value="{{ doctor.name }}">Consult</button>
+                            </form>
+                        </li>
+                    {% else %}
+                        <li>{{ doctor.name }} (Currently Unavailable)</li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No doctors are currently available for tele-consultation.</p>
+        {% endif %}
+    </section>
+
+    <section>
+        <h2>Step 6: Place Mock Order & Generate Confirmation</h2>
+        <form method="post" action="/checkout">
+            <button type="submit">Place Mock Order</button>
+        </form>
+    </section>
 </body>
 </html>

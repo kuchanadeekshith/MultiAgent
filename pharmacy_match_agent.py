@@ -1,31 +1,46 @@
-class PharmacyMatchAgent:
+import json
+import pandas as pd
+from location import haversine_manual
 
-    def load_pharmacies(self, filepath):
-        with open(filepath) as f:
-            pharmacies = json.load(f)
-        return pharmacies
+def find_pharmacies_with_stock(
+    sku_or_name,
+    user_lat,
+    user_lon,
+    pharmacies_file="data/pharmacies.json",
+    inventory_file="data/inventory.csv",
+    max_distance=100
+):
+    with open(pharmacies_file) as f:
+        pharmacies = json.load(f)
+    inventory = pd.read_csv(inventory_file)
 
-    def load_inventory(self, filepath):
-        inventory = []
-        with open(filepath, newline='') as csvfile:
-            reader = csv.DictReader(csvfile)
-            for row in reader:
-                inventory.append(row)
-        return inventory
+    search_key = str(sku_or_name).strip().lower()
+    matches = []
 
-    def find_pharmacy_with_stock(self, sku, pharmacies, inventory):
-        # Loop through pharmacies
-        for pharm in pharmacies:
-            # Check inventory for this pharmacy and sku
-            for item in inventory:
-                if item["pharmacy_id"] == pharm["id"] and item["sku"] == sku and int(item["qty"]) > 0:
-                    # Found pharmacy with product
-                    return {
-                        "pharmacy_id": pharm["id"],
-                        "pharmacy_name": pharm["name"],
-                        "items": [{"sku": sku, "qty": 1}],
-                        "eta_min": 30,          #
-                        "delivery_fee": 20      
-                    }
-        # No pharmacy found with stock
-        return False
+    for pharm in pharmacies:
+        inv = inventory[
+            (inventory["pharmacy_id"] == pharm["id"]) &
+            (
+                (inventory["sku"].str.lower() == search_key) |
+                (inventory["drug_name"].str.lower() == search_key)
+            ) &
+            (inventory["qty"] > 0)
+        ]
+
+        if not inv.empty:
+            distance = haversine_manual(user_lat, user_lon, float(pharm["lat"]), float(pharm["lon"]))
+            if distance <= max_distance:
+                matches.append({
+                    "pharmacy_id": pharm["id"],
+                    "pharmacy_name": pharm["name"],
+                    "distance": round(distance, 2),
+                    "price": int(inv.iloc[0]["price"]),
+                    "delivery_fee": 50,
+                    "available_qty": int(inv.iloc[0]["qty"]),
+                    "sku": inv.iloc[0]["sku"],
+                    "drug_name": inv.iloc[0]["drug_name"],
+                    "eta_min":round(distance*2,2)
+                })
+
+    matches = sorted(matches, key=lambda x: x["distance"])
+    return matches[:3]
